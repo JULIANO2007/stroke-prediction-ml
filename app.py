@@ -8,246 +8,44 @@ import joblib
 # =========================================================
 
 st.set_page_config(
-    page_title="Stroke AI Prediction",
+    page_title="Stroke Prediction",
     page_icon="🫀",
-    layout="wide",
-    initial_sidebar_state="collapsed"
+    layout="wide"
 )
 
 
 # =========================================================
-# CUSTOM CSS — 3D / GLASS UI
+# CLEAN STYLE
 # =========================================================
 
 st.markdown("""
 <style>
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
-
-/* Background */
-
-.stApp {
-    background:
-        radial-gradient(circle at 10% 10%, rgba(0, 180, 255, 0.18), transparent 30%),
-        radial-gradient(circle at 90% 20%, rgba(150, 70, 255, 0.18), transparent 30%),
-        radial-gradient(circle at 50% 90%, rgba(0, 255, 180, 0.10), transparent 35%),
-        linear-gradient(135deg, #07111f 0%, #0b1630 50%, #10152b 100%);
-    color: white;
-}
-
-
-/* Main container */
-
-.block-container {
+.main {
     padding-top: 2rem;
-    padding-bottom: 3rem;
-    max-width: 1250px;
 }
 
-
-/* Hero */
-
-.hero {
-    padding: 35px;
-    border-radius: 28px;
-    margin-bottom: 30px;
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(25, 118, 210, 0.28),
-            rgba(126, 87, 194, 0.25)
-        );
-
-    border: 1px solid rgba(255,255,255,0.15);
-
-    box-shadow:
-        0 25px 60px rgba(0,0,0,0.45),
-        inset 0 1px 1px rgba(255,255,255,0.12);
-
-    transform: perspective(1000px) rotateX(1deg);
+h1 {
+    font-size: 42px !important;
 }
 
-.hero-title {
-    font-size: 42px;
-    font-weight: 800;
-    margin-bottom: 8px;
-
-    background: linear-gradient(
-        90deg,
-        #ffffff,
-        #66d9ff,
-        #b58cff
-    );
-
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+h2 {
+    font-size: 28px !important;
 }
 
-.hero-subtitle {
-    color: #b8c7dc;
-    font-size: 17px;
+h3 {
+    font-size: 22px !important;
 }
-
-
-/* Cards */
-
-.card {
-    padding: 25px;
-    border-radius: 22px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255,255,255,0.09),
-            rgba(255,255,255,0.035)
-        );
-
-    border: 1px solid rgba(255,255,255,0.12);
-
-    box-shadow:
-        0 20px 40px rgba(0,0,0,0.35),
-        inset 0 1px 1px rgba(255,255,255,0.10);
-
-    transition: all 0.25s ease;
-}
-
-.card:hover {
-    transform:
-        translateY(-5px)
-        perspective(900px)
-        rotateX(1deg);
-
-    box-shadow:
-        0 30px 60px rgba(0,0,0,0.45),
-        0 0 30px rgba(75, 190, 255, 0.08);
-}
-
-
-/* Section title */
-
-.section-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 18px;
-}
-
-
-/* Result */
-
-.result-card {
-    padding: 30px;
-    margin-top: 25px;
-    border-radius: 25px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(17, 28, 55, 0.95),
-            rgba(21, 35, 67, 0.85)
-        );
-
-    border: 1px solid rgba(255,255,255,0.14);
-
-    box-shadow:
-        0 25px 60px rgba(0,0,0,0.5),
-        inset 0 1px 1px rgba(255,255,255,0.08);
-}
-
-
-/* Metric */
-
-.metric-card {
-    text-align: center;
-    padding: 25px;
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(0, 170, 255, 0.16),
-            rgba(130, 70, 255, 0.12)
-        );
-
-    border: 1px solid rgba(100,200,255,0.18);
-
-    box-shadow:
-        0 15px 35px rgba(0,0,0,0.35);
-}
-
-.metric-value {
-    font-size: 38px;
-    font-weight: 800;
-
-    background: linear-gradient(
-        90deg,
-        #5ee7ff,
-        #a98cff
-    );
-
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-
-/* Button */
 
 .stButton > button {
     width: 100%;
-    border-radius: 16px;
-    border: none;
-
-    padding: 15px;
-
-    font-size: 17px;
-    font-weight: 700;
-
-    color: white;
-
-    background:
-        linear-gradient(
-            135deg,
-            #008cff,
-            #7c4dff
-        );
-
-    box-shadow:
-        0 12px 25px rgba(50,100,255,0.35);
-
-    transition: all 0.25s ease;
+    height: 50px;
+    font-size: 18px;
+    font-weight: bold;
 }
 
-.stButton > button:hover {
-    transform: translateY(-3px) scale(1.01);
-
-    box-shadow:
-        0 18px 35px rgba(80,120,255,0.45);
-}
-
-
-/* Inputs */
-
-div[data-baseweb="select"] > div {
-    background-color: rgba(255,255,255,0.07);
-    border-radius: 12px;
-}
-
-.stSlider {
-    padding-top: 5px;
-}
-
-
-/* Footer */
-
-.footer {
-    text-align: center;
-    margin-top: 40px;
-    color: #7f91aa;
-    font-size: 13px;
+div[data-testid="stMetricValue"] {
+    font-size: 30px;
 }
 
 </style>
@@ -255,10 +53,11 @@ div[data-baseweb="select"] > div {
 
 
 # =========================================================
-# LOAD MODEL
+# LOAD MODEL & PREPROCESSING
 # =========================================================
 
-try:
+@st.cache_resource
+def load_models():
 
     model = joblib.load("random_forest_model.pkl")
 
@@ -266,18 +65,25 @@ try:
         "feature_columns_stroke.pkl"
     )
 
+    imputer = joblib.load(
+        "median_imputer_stroke.pkl"
+    )
+
     scaler = joblib.load(
         "scaler_stroke.pkl"
     )
 
+    return model, feature_columns, imputer, scaler
+
+
+try:
+
+    model, feature_columns, imputer, scaler = load_models()
+
 except FileNotFoundError as e:
 
     st.error(
-        f"❌ File tidak ditemukan: {e}"
-    )
-
-    st.info(
-        "Pastikan file .pkl berada di folder yang sama dengan app.py."
+        f"File tidak ditemukan: {e}"
     )
 
     st.stop()
@@ -285,72 +91,55 @@ except FileNotFoundError as e:
 except Exception as e:
 
     st.error(
-        f"❌ Gagal memuat model: {e}"
+        f"Gagal memuat model: {e}"
     )
 
     st.stop()
 
 
 # =========================================================
-# HERO
+# HEADER
 # =========================================================
 
-st.markdown("""
-<div class="hero">
+st.title("🫀 Stroke Prediction")
 
-<div class="hero-title">
-🫀 Stroke AI Prediction
-</div>
+st.write(
+    "Enter patient information to obtain a prediction "
+    "from the trained Random Forest model."
+)
 
-<div class="hero-subtitle">
-Machine Learning powered stroke prediction system
-</div>
-
-<div style="
-margin-top:15px;
-color:#8fa8c5;
-font-size:14px;
-">
-Random Forest Classifier • Interactive Prediction • AI Assisted
-</div>
-
-</div>
-""", unsafe_allow_html=True)
+st.caption(
+    "This application is for machine learning demonstration "
+    "and is not a medical diagnosis."
+)
 
 
 # =========================================================
 # PATIENT INFORMATION
 # =========================================================
 
-st.markdown(
-    '<div class="section-title">👤 Patient Information</div>',
-    unsafe_allow_html=True
-)
+st.header("Patient Information")
 
 
-col1, col2 = st.columns(2, gap="large")
+col1, col2 = st.columns(2)
 
 
 # =========================================================
-# LEFT COLUMN
+# COLUMN 1
 # =========================================================
 
 with col1:
 
-    st.markdown(
-        '<div class="card">',
-        unsafe_allow_html=True
-    )
-
     age = st.slider(
-        "🎂 Age",
+        "Age",
         min_value=0.08,
         max_value=82.0,
-        value=40.0
+        value=40.0,
+        step=0.1
     )
 
     gender_input = st.selectbox(
-        "⚥ Gender",
+        "Gender",
         [
             "Female",
             "Male",
@@ -359,7 +148,7 @@ with col1:
     )
 
     hypertension = st.radio(
-        "🩺 Hypertension",
+        "Hypertension",
         [0, 1],
         horizontal=True,
         format_func=lambda x:
@@ -367,7 +156,7 @@ with col1:
     )
 
     heart_disease = st.radio(
-        "❤️ Heart Disease",
+        "Heart Disease",
         [0, 1],
         horizontal=True,
         format_func=lambda x:
@@ -375,44 +164,36 @@ with col1:
     )
 
     ever_married_input = st.radio(
-        "💍 Ever Married",
+        "Ever Married",
         ["Yes", "No"],
         horizontal=True
     )
 
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
-
 
 # =========================================================
-# RIGHT COLUMN
+# COLUMN 2
 # =========================================================
 
 with col2:
 
-    st.markdown(
-        '<div class="card">',
-        unsafe_allow_html=True
-    )
-
     avg_glucose_level = st.slider(
-        "🧪 Average Glucose Level",
+        "Average Glucose Level",
         min_value=55.12,
         max_value=271.74,
-        value=100.0
+        value=100.0,
+        step=0.01
     )
 
     bmi = st.slider(
-        "⚖️ BMI",
+        "BMI",
         min_value=10.3,
         max_value=97.6,
-        value=25.0
+        value=25.0,
+        step=0.1
     )
 
     work_type_input = st.selectbox(
-        "💼 Work Type",
+        "Work Type",
         [
             "Private",
             "Self-employed",
@@ -423,24 +204,19 @@ with col2:
     )
 
     residence_type_input = st.radio(
-        "🏠 Residence Type",
+        "Residence Type",
         ["Urban", "Rural"],
         horizontal=True
     )
 
     smoking_status_input = st.selectbox(
-        "🚬 Smoking Status",
+        "Smoking Status",
         [
             "formerly smoked",
             "never smoked",
             "smokes",
             "Unknown"
         ]
-    )
-
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
     )
 
 
@@ -457,38 +233,47 @@ gender_mapping = {
 
 user_input_dict = {
 
-    "age": age,
+    "gender":
+        gender_mapping[gender_input],
 
-    "hypertension": hypertension,
+    "age":
+        age,
 
-    "heart_disease": heart_disease,
+    "hypertension":
+        hypertension,
 
-    "avg_glucose_level": avg_glucose_level,
-
-    "bmi": bmi,
-
-    "gender": gender_mapping[gender_input],
+    "heart_disease":
+        heart_disease,
 
     "ever_married":
         1 if ever_married_input == "Yes" else 0,
 
     "Residence_type":
-        1 if residence_type_input == "Urban" else 0
+        1 if residence_type_input == "Urban" else 0,
+
+    "avg_glucose_level":
+        avg_glucose_level,
+
+    "bmi":
+        bmi
 }
 
 
 # =========================================================
-# WORK TYPE
+# WORK TYPE ONE-HOT ENCODING
 # =========================================================
 
 work_columns = [
 
     "work_Govt_job",
-    "work_Never_worked",
-    "work_Private",
-    "work_Self-employed",
-    "work_children"
 
+    "work_Never_worked",
+
+    "work_Private",
+
+    "work_Self-employed",
+
+    "work_children"
 ]
 
 
@@ -529,16 +314,18 @@ elif work_type_input == "children":
 
 
 # =========================================================
-# SMOKING STATUS
+# SMOKING ONE-HOT ENCODING
 # =========================================================
 
 smoking_columns = [
 
     "smoking_Unknown",
-    "smoking_formerly smoked",
-    "smoking_never smoked",
-    "smoking_smokes"
 
+    "smoking_formerly smoked",
+
+    "smoking_never smoked",
+
+    "smoking_smokes"
 ]
 
 
@@ -573,7 +360,7 @@ elif smoking_status_input == "smokes":
 
 
 # =========================================================
-# DATAFRAME
+# CREATE DATAFRAME
 # =========================================================
 
 input_df = pd.DataFrame(
@@ -581,7 +368,9 @@ input_df = pd.DataFrame(
 )
 
 
-# Ensure exact training feature order
+# =========================================================
+# FEATURE ORDER
+# =========================================================
 
 input_df = input_df.reindex(
     columns=feature_columns,
@@ -590,79 +379,79 @@ input_df = input_df.reindex(
 
 
 # =========================================================
+# PREPROCESSING
+# IMPORTANT:
+# SAME PROCESS AS TRAINING
+# =========================================================
+
+numerical_features = [
+
+    "age",
+
+    "avg_glucose_level",
+
+    "bmi"
+]
+
+
+# Median imputation
+input_numerical = input_df[
+    numerical_features
+].copy()
+
+
+input_numerical = imputer.transform(
+    input_numerical
+)
+
+
+# Standard scaling
+input_numerical = scaler.transform(
+    input_numerical
+)
+
+
+# Put processed values back
+input_df[
+    numerical_features
+] = input_numerical
+
+
+# =========================================================
 # PREDICTION BUTTON
 # =========================================================
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.divider()
 
 if st.button(
-    "🔮  PREDICT STROKE RISK  ",
+    "🔍 Predict Stroke Risk",
     use_container_width=True
 ):
 
     try:
 
-        # -------------------------------------------------
-        # SCALE NUMERICAL FEATURES
-        # -------------------------------------------------
-
-        numerical_features = [
-            "age",
-            "avg_glucose_level",
-            "bmi"
-        ]
-
-
-        input_numerical = input_df[
-            numerical_features
-        ].copy()
-
-
-        input_numerical_scaled = scaler.transform(
-            input_numerical
-        )
-
-
-        input_df[
-            numerical_features
-        ] = input_numerical_scaled
-
-
-        # -------------------------------------------------
-        # MODEL PREDICTION
-        # -------------------------------------------------
-
+        # Model prediction
         prediction = model.predict(
             input_df
         )[0]
 
 
-        prediction_proba = model.predict_proba(
+        # Prediction probability
+        probabilities = model.predict_proba(
             input_df
         )[0]
 
 
-        stroke_probability = (
-            prediction_proba[1] * 100
-        )
+        no_stroke_probability = probabilities[0]
 
-        no_stroke_probability = (
-            prediction_proba[0] * 100
-        )
+        stroke_probability = probabilities[1]
 
 
         # =================================================
         # RESULT
         # =================================================
 
-        st.markdown(
-            '<div class="result-card">',
-            unsafe_allow_html=True
-        )
-
-        st.markdown(
-            "### 🔬 Prediction Result"
-        )
+        st.header("Prediction Result")
 
 
         if prediction == 1:
@@ -679,49 +468,30 @@ if st.button(
 
 
         # =================================================
-        # METRICS
+        # PROBABILITY
         # =================================================
 
-        metric1, metric2 = st.columns(2)
+        st.subheader(
+            "Model Probability"
+        )
 
 
-        with metric1:
+        result_col1, result_col2 = st.columns(2)
 
-            st.markdown(
-                f"""
-                <div class="metric-card">
 
-                <div>
-                🫀 Stroke Probability
-                </div>
+        with result_col1:
 
-                <div class="metric-value">
-                {stroke_probability:.2f}%
-                </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            st.metric(
+                "No Stroke",
+                f"{no_stroke_probability * 100:.2f}%"
             )
 
 
-        with metric2:
+        with result_col2:
 
-            st.markdown(
-                f"""
-                <div class="metric-card">
-
-                <div>
-                💚 No Stroke Probability
-                </div>
-
-                <div class="metric-value">
-                {no_stroke_probability:.2f}%
-                </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            st.metric(
+                "Stroke",
+                f"{stroke_probability * 100:.2f}%"
             )
 
 
@@ -729,31 +499,41 @@ if st.button(
         # PROBABILITY BAR
         # =================================================
 
-        st.markdown(
-            "<br>",
-            unsafe_allow_html=True
-        )
-
-        st.progress(
-            min(
-                max(
-                    stroke_probability / 100,
-                    0.0
-                ),
-                1.0
-            )
+        st.write(
+            "Probability distribution:"
         )
 
 
-        st.caption(
-            f"Model probability for Stroke: "
-            f"{stroke_probability:.2f}%"
+        probability_df = pd.DataFrame(
+            {
+                "Class": [
+                    "No Stroke",
+                    "Stroke"
+                ],
+
+                "Probability": [
+                    no_stroke_probability,
+                    stroke_probability
+                ]
+            }
         )
 
 
-        st.markdown(
-            "</div>",
-            unsafe_allow_html=True
+        st.bar_chart(
+            probability_df.set_index("Class")
+        )
+
+
+        # =================================================
+        # EXPLANATION
+        # =================================================
+
+        st.info(
+            "The final prediction follows the class "
+            "predicted by the trained Random Forest model. "
+            "The displayed percentages represent the model's "
+            "predicted class probabilities and are not clinical "
+            "risk percentages."
         )
 
 
@@ -762,36 +542,15 @@ if st.button(
         # =================================================
 
         st.warning(
-            "⚠️ Disclaimer: This application provides "
-            "a machine-learning prediction for educational "
-            "purposes. It is not a medical diagnosis and "
-            "should not replace professional medical advice."
+            "Disclaimer: This application is a machine "
+            "learning demonstration and must not be used "
+            "as a medical diagnosis or as a substitute "
+            "for professional medical advice."
         )
 
 
     except Exception as e:
 
         st.error(
-            f"❌ Prediction error: {e}"
+            f"Prediction error: {e}"
         )
-
-
-# =========================================================
-# FOOTER
-# =========================================================
-
-st.markdown("""
-<div class="footer">
-
-🫀 Stroke AI Prediction System
-
-<br><br>
-
-Built with Python • Streamlit • Random Forest
-
-<br>
-
-Machine Learning Project
-
-</div>
-""", unsafe_allow_html=True)

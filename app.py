@@ -10,50 +10,170 @@ import joblib
 st.set_page_config(
     page_title="Stroke Prediction",
     page_icon="🫀",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 
 # =========================================================
-# CLEAN STYLE
+# CUSTOM CSS
 # =========================================================
 
 st.markdown("""
 <style>
 
-.main {
-    padding-top: 2rem;
-}
+    /* Main background */
+    .stApp {
+        background: #f7f9fc;
+    }
 
-h1 {
-    font-size: 42px !important;
-}
+    /* Main container */
+    .block-container {
+        max-width: 1200px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
 
-h2 {
-    font-size: 28px !important;
-}
+    /* Header */
+    .hero {
+        background: linear-gradient(
+            135deg,
+            #ffffff 0%,
+            #eef4ff 100%
+        );
+        padding: 32px;
+        border-radius: 22px;
+        border: 1px solid #e4eaf3;
+        margin-bottom: 28px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    }
 
-h3 {
-    font-size: 22px !important;
-}
+    .hero-title {
+        font-size: 42px;
+        font-weight: 800;
+        margin: 0;
+        color: #172033;
+    }
 
-.stButton > button {
-    width: 100%;
-    height: 50px;
-    font-size: 18px;
-    font-weight: bold;
-}
+    .hero-subtitle {
+        font-size: 17px;
+        color: #667085;
+        margin-top: 10px;
+        line-height: 1.6;
+    }
 
-div[data-testid="stMetricValue"] {
-    font-size: 30px;
-}
+    /* Section title */
+    .section-title {
+        font-size: 25px;
+        font-weight: 750;
+        color: #172033;
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+
+    .section-description {
+        color: #667085;
+        font-size: 15px;
+        margin-bottom: 20px;
+    }
+
+    /* Cards */
+    .card {
+        background: white;
+        padding: 24px;
+        border-radius: 18px;
+        border: 1px solid #e4eaf3;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.035);
+        margin-bottom: 20px;
+    }
+
+    /* Metrics */
+    div[data-testid="stMetric"] {
+        background: white;
+        border: 1px solid #e4eaf3;
+        padding: 18px;
+        border-radius: 16px;
+        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.035);
+    }
+
+    div[data-testid="stMetricLabel"] {
+        font-size: 14px;
+    }
+
+    div[data-testid="stMetricValue"] {
+        font-size: 28px;
+        font-weight: 750;
+    }
+
+    /* Button */
+    .stButton > button {
+        width: 100%;
+        min-height: 52px;
+        border-radius: 13px;
+        font-size: 17px;
+        font-weight: 700;
+        border: none;
+    }
+
+    /* Divider */
+    hr {
+        margin-top: 30px;
+        margin-bottom: 30px;
+        border-color: #e4eaf3;
+    }
+
+    /* Info box */
+    .info-card {
+        background: #f0f6ff;
+        border: 1px solid #cfe0ff;
+        border-radius: 16px;
+        padding: 18px 20px;
+        color: #344054;
+        line-height: 1.6;
+    }
+
+    /* Disclaimer */
+    .disclaimer {
+        background: #fff9e8;
+        border: 1px solid #f2df9b;
+        border-radius: 16px;
+        padding: 18px 20px;
+        color: #594b20;
+        line-height: 1.6;
+        margin-top: 25px;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+
+        .block-container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .hero {
+            padding: 24px;
+        }
+
+        .hero-title {
+            font-size: 31px;
+        }
+
+        .hero-subtitle {
+            font-size: 15px;
+        }
+
+        .section-title {
+            font-size: 22px;
+        }
+    }
 
 </style>
 """, unsafe_allow_html=True)
 
 
 # =========================================================
-# LOAD MODEL & PREPROCESSING
+# LOAD MODEL
 # =========================================================
 
 @st.cache_resource
@@ -83,7 +203,7 @@ try:
 except FileNotFoundError as e:
 
     st.error(
-        f"File tidak ditemukan: {e}"
+        f"Required model file was not found: {e}"
     )
 
     st.stop()
@@ -91,7 +211,7 @@ except FileNotFoundError as e:
 except Exception as e:
 
     st.error(
-        f"Gagal memuat model: {e}"
+        f"Unable to load the model files: {e}"
     )
 
     st.stop()
@@ -101,34 +221,63 @@ except Exception as e:
 # HEADER
 # =========================================================
 
-st.title("🫀 Stroke Prediction")
+st.markdown("""
+<div class="hero">
 
-st.write(
-    "Enter patient information to obtain a prediction "
-    "from the trained Random Forest model."
-)
+    <div class="hero-title">
+        🫀 Stroke Prediction
+    </div>
 
-st.caption(
-    "This application is for machine learning demonstration "
-    "and is not a medical diagnosis."
-)
+    <div class="hero-subtitle">
+        Enter the required patient information to obtain
+        a prediction from a trained Random Forest machine
+        learning model.
+    </div>
+
+</div>
+""", unsafe_allow_html=True)
 
 
 # =========================================================
 # PATIENT INFORMATION
 # =========================================================
 
-st.header("Patient Information")
+st.markdown(
+    '<div class="section-title">Patient Information</div>',
+    unsafe_allow_html=True
+)
 
-
-col1, col2 = st.columns(2)
+st.markdown(
+    '<div class="section-description">'
+    'Please complete the information below before running '
+    'the prediction.'
+    '</div>',
+    unsafe_allow_html=True
+)
 
 
 # =========================================================
-# COLUMN 1
+# INPUT COLUMNS
 # =========================================================
 
-with col1:
+left_col, right_col = st.columns(
+    2,
+    gap="large"
+)
+
+
+# =========================================================
+# LEFT COLUMN
+# =========================================================
+
+with left_col:
+
+    st.markdown(
+        '<div class="card">',
+        unsafe_allow_html=True
+    )
+
+    st.subheader("👤 Basic Information")
 
     age = st.slider(
         "Age",
@@ -169,12 +318,24 @@ with col1:
         horizontal=True
     )
 
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
+
 
 # =========================================================
-# COLUMN 2
+# RIGHT COLUMN
 # =========================================================
 
-with col2:
+with right_col:
+
+    st.markdown(
+        '<div class="card">',
+        unsafe_allow_html=True
+    )
+
+    st.subheader("📊 Health & Lifestyle")
 
     avg_glucose_level = st.slider(
         "Average Glucose Level",
@@ -219,6 +380,11 @@ with col2:
         ]
     )
 
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
+
 
 # =========================================================
 # ENCODING
@@ -231,7 +397,7 @@ gender_mapping = {
 }
 
 
-user_input_dict = {
+user_input = {
 
     "gender":
         gender_mapping[gender_input],
@@ -260,116 +426,72 @@ user_input_dict = {
 
 
 # =========================================================
-# WORK TYPE ONE-HOT ENCODING
+# WORK TYPE ENCODING
 # =========================================================
 
 work_columns = [
-
     "work_Govt_job",
-
     "work_Never_worked",
-
     "work_Private",
-
     "work_Self-employed",
-
     "work_children"
 ]
 
-
-for col in work_columns:
-
-    user_input_dict[col] = 0
+for column in work_columns:
+    user_input[column] = 0
 
 
-if work_type_input == "Govt_job":
+work_mapping = {
+    "Govt_job": "work_Govt_job",
+    "Never_worked": "work_Never_worked",
+    "Private": "work_Private",
+    "Self-employed": "work_Self-employed",
+    "children": "work_children"
+}
 
-    user_input_dict[
-        "work_Govt_job"
-    ] = 1
-
-elif work_type_input == "Never_worked":
-
-    user_input_dict[
-        "work_Never_worked"
-    ] = 1
-
-elif work_type_input == "Private":
-
-    user_input_dict[
-        "work_Private"
-    ] = 1
-
-elif work_type_input == "Self-employed":
-
-    user_input_dict[
-        "work_Self-employed"
-    ] = 1
-
-elif work_type_input == "children":
-
-    user_input_dict[
-        "work_children"
-    ] = 1
+user_input[
+    work_mapping[work_type_input]
+] = 1
 
 
 # =========================================================
-# SMOKING ONE-HOT ENCODING
+# SMOKING ENCODING
 # =========================================================
 
 smoking_columns = [
-
     "smoking_Unknown",
-
     "smoking_formerly smoked",
-
     "smoking_never smoked",
-
     "smoking_smokes"
 ]
 
-
-for col in smoking_columns:
-
-    user_input_dict[col] = 0
+for column in smoking_columns:
+    user_input[column] = 0
 
 
-if smoking_status_input == "Unknown":
+smoking_mapping = {
+    "Unknown": "smoking_Unknown",
+    "formerly smoked": "smoking_formerly smoked",
+    "never smoked": "smoking_never smoked",
+    "smokes": "smoking_smokes"
+}
 
-    user_input_dict[
-        "smoking_Unknown"
-    ] = 1
-
-elif smoking_status_input == "formerly smoked":
-
-    user_input_dict[
-        "smoking_formerly smoked"
-    ] = 1
-
-elif smoking_status_input == "never smoked":
-
-    user_input_dict[
-        "smoking_never smoked"
-    ] = 1
-
-elif smoking_status_input == "smokes":
-
-    user_input_dict[
-        "smoking_smokes"
-    ] = 1
+user_input[
+    smoking_mapping[smoking_status_input]
+] = 1
 
 
 # =========================================================
-# CREATE DATAFRAME
+# CREATE INPUT DATAFRAME
 # =========================================================
 
 input_df = pd.DataFrame(
-    [user_input_dict]
+    [user_input]
 )
 
 
 # =========================================================
-# FEATURE ORDER
+# ENSURE FEATURE ORDER
 # =========================================================
 
 input_df = input_df.reindex(
@@ -380,41 +502,48 @@ input_df = input_df.reindex(
 
 # =========================================================
 # PREPROCESSING
-# IMPORTANT:
-# SAME PROCESS AS TRAINING
 # =========================================================
 
 numerical_features = [
-
     "age",
-
     "avg_glucose_level",
-
     "bmi"
 ]
 
-
-# Median imputation
-input_numerical = input_df[
+numeric_input = input_df[
     numerical_features
 ].copy()
 
 
-input_numerical = imputer.transform(
-    input_numerical
-)
+try:
+
+    # Median imputation
+    numeric_input = imputer.transform(
+        numeric_input
+    )
+
+    # Standard scaling
+    numeric_input = scaler.transform(
+        numeric_input
+    )
+
+except Exception as e:
+
+    st.error(
+        "Preprocessing failed. "
+        "Please make sure the preprocessing files "
+        "were created with the same scikit-learn version "
+        "used by the application."
+    )
+
+    st.stop()
 
 
-# Standard scaling
-input_numerical = scaler.transform(
-    input_numerical
-)
-
-
-# Put processed values back
-input_df[
+# Put transformed numerical values back
+input_df.loc[
+    :,
     numerical_features
-] = input_numerical
+] = numeric_input
 
 
 # =========================================================
@@ -423,10 +552,31 @@ input_df[
 
 st.divider()
 
-if st.button(
-    "🔍 Predict Stroke Risk",
+st.markdown(
+    '<div class="section-title">Prediction</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="section-description">'
+    'Run the trained Random Forest model using the '
+    'information provided above.'
+    '</div>',
+    unsafe_allow_html=True
+)
+
+
+predict_button = st.button(
+    "🔍 Predict",
     use_container_width=True
-):
+)
+
+
+# =========================================================
+# PREDICTION
+# =========================================================
+
+if predict_button:
 
     try:
 
@@ -435,24 +585,47 @@ if st.button(
             input_df
         )[0]
 
-
-        # Prediction probability
+        # Model probabilities
         probabilities = model.predict_proba(
             input_df
         )[0]
 
+        # Find probability based on model classes
+        class_probabilities = dict(
+            zip(
+                model.classes_,
+                probabilities
+            )
+        )
 
-        no_stroke_probability = probabilities[0]
+        no_stroke_probability = class_probabilities.get(
+            0,
+            0
+        )
 
-        stroke_probability = probabilities[1]
+        stroke_probability = class_probabilities.get(
+            1,
+            0
+        )
 
 
         # =================================================
-        # RESULT
+        # RESULT HEADER
         # =================================================
 
-        st.header("Prediction Result")
+        st.divider()
 
+        st.markdown(
+            '<div class="section-title">'
+            'Prediction Result'
+            '</div>',
+            unsafe_allow_html=True
+        )
+
+
+        # =================================================
+        # MAIN RESULT
+        # =================================================
 
         if prediction == 1:
 
@@ -468,15 +641,20 @@ if st.button(
 
 
         # =================================================
-        # PROBABILITY
+        # PROBABILITY METRICS
         # =================================================
 
-        st.subheader(
-            "Model Probability"
+        st.markdown(
+            '<div class="section-title">'
+            'Model Probability'
+            '</div>',
+            unsafe_allow_html=True
         )
 
-
-        result_col1, result_col2 = st.columns(2)
+        result_col1, result_col2 = st.columns(
+            2,
+            gap="large"
+        )
 
 
         with result_col1:
@@ -496,13 +674,15 @@ if st.button(
 
 
         # =================================================
-        # PROBABILITY BAR
+        # PROBABILITY VISUALIZATION
         # =================================================
 
-        st.write(
-            "Probability distribution:"
+        st.markdown(
+            '<div class="section-title">'
+            'Probability Distribution'
+            '</div>',
+            unsafe_allow_html=True
         )
-
 
         probability_df = pd.DataFrame(
             {
@@ -512,28 +692,33 @@ if st.button(
                 ],
 
                 "Probability": [
-                    no_stroke_probability,
-                    stroke_probability
+                    no_stroke_probability * 100,
+                    stroke_probability * 100
                 ]
             }
         )
 
-
         st.bar_chart(
-            probability_df.set_index("Class")
+            probability_df.set_index("Class"),
+            height=300
         )
 
 
         # =================================================
-        # EXPLANATION
+        # INTERPRETATION
         # =================================================
 
-        st.info(
-            "The final prediction follows the class "
-            "predicted by the trained Random Forest model. "
-            "The displayed percentages represent the model's "
-            "predicted class probabilities and are not clinical "
-            "risk percentages."
+        st.markdown(
+            '<div class="info-card">'
+            '<strong>How to read the result</strong><br><br>'
+            'The prediction shown above comes directly from '
+            'the trained Random Forest model. The percentages '
+            'represent the model&#39;s predicted class '
+            'probabilities based on the input features. '
+            'They are not clinical risk percentages and '
+            'should not be interpreted as a medical diagnosis.'
+            '</div>',
+            unsafe_allow_html=True
         )
 
 
@@ -541,16 +726,19 @@ if st.button(
         # DISCLAIMER
         # =================================================
 
-        st.warning(
-            "Disclaimer: This application is a machine "
-            "learning demonstration and must not be used "
-            "as a medical diagnosis or as a substitute "
-            "for professional medical advice."
+        st.markdown(
+            '<div class="disclaimer">'
+            '<strong>⚠️ Important</strong><br><br>'
+            'This application is a machine learning '
+            'demonstration. It is not intended to diagnose, '
+            'treat, or replace professional medical advice.'
+            '</div>',
+            unsafe_allow_html=True
         )
 
 
     except Exception as e:
 
         st.error(
-            f"Prediction error: {e}"
+            f"Prediction failed: {e}"
         )

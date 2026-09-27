@@ -3,20 +3,6 @@ import pandas as pd
 import joblib
 
 # =========================
-# LOAD MODEL
-# =========================
-try:
-    model = joblib.load("random_forest_model.pkl")
-    feature_columns = joblib.load("feature_columns.pkl")
-except FileNotFoundError as e:
-    st.error(f"File tidak ditemukan: {e}")
-    st.stop()
-except Exception as e:
-    st.error(f"Gagal memuat model: {e}")
-    st.stop()
-
-
-# =========================
 # PAGE CONFIG
 # =========================
 st.set_page_config(
@@ -25,6 +11,26 @@ st.set_page_config(
     layout="wide"
 )
 
+
+# =========================
+# LOAD MODEL
+# =========================
+try:
+    model = joblib.load("random_forest_model.pkl")
+    feature_columns = joblib.load("feature_columns_stroke.pkl")
+
+except FileNotFoundError as e:
+    st.error(f"File tidak ditemukan: {e}")
+    st.stop()
+
+except Exception as e:
+    st.error(f"Gagal memuat model: {e}")
+    st.stop()
+
+
+# =========================
+# TITLE
+# =========================
 st.title("🫀 Stroke Prediction App")
 st.write("Enter patient information to predict the model's stroke risk.")
 
@@ -36,7 +42,9 @@ st.header("Patient Information")
 
 col1, col2 = st.columns(2)
 
+
 with col1:
+
     age = st.slider(
         "Age",
         min_value=0.08,
@@ -68,6 +76,7 @@ with col1:
 
 
 with col2:
+
     avg_glucose_level = st.slider(
         "Average Glucose Level",
         min_value=55.12,
@@ -119,23 +128,35 @@ gender_mapping = {
     "Other": 2
 }
 
+
 user_input_dict = {
+
     "age": age,
+
     "hypertension": hypertension,
+
     "heart_disease": heart_disease,
+
     "avg_glucose_level": avg_glucose_level,
+
     "bmi": bmi,
+
     "gender": gender_mapping[gender_input],
-    "ever_married": 1 if ever_married_input == "Yes" else 0,
-    "Residence_type": 1 if residence_type_input == "Urban" else 0
+
+    "ever_married": (
+        1 if ever_married_input == "Yes" else 0
+    ),
+
+    "Residence_type": (
+        1 if residence_type_input == "Urban" else 0
+    )
 }
 
 
 # =========================
-# ONE-HOT ENCODING
+# WORK TYPE ONE-HOT
 # =========================
 
-# Set all work columns to 0
 work_columns = [
     "work_Govt_job",
     "work_Never_worked",
@@ -144,28 +165,36 @@ work_columns = [
     "work_children"
 ]
 
+
 for col in work_columns:
     user_input_dict[col] = 0
 
 
-# Set selected work type to 1
 if work_type_input == "Govt_job":
+
     user_input_dict["work_Govt_job"] = 1
 
 elif work_type_input == "Never_worked":
+
     user_input_dict["work_Never_worked"] = 1
 
 elif work_type_input == "Private":
+
     user_input_dict["work_Private"] = 1
 
 elif work_type_input == "Self-employed":
+
     user_input_dict["work_Self-employed"] = 1
 
 elif work_type_input == "children":
+
     user_input_dict["work_children"] = 1
 
 
-# Set all smoking columns to 0
+# =========================
+# SMOKING STATUS ONE-HOT
+# =========================
+
 smoking_columns = [
     "smoking_Unknown",
     "smoking_formerly smoked",
@@ -173,21 +202,25 @@ smoking_columns = [
     "smoking_smokes"
 ]
 
+
 for col in smoking_columns:
     user_input_dict[col] = 0
 
 
-# Set selected smoking status to 1
 if smoking_status_input == "Unknown":
+
     user_input_dict["smoking_Unknown"] = 1
 
 elif smoking_status_input == "formerly smoked":
+
     user_input_dict["smoking_formerly smoked"] = 1
 
 elif smoking_status_input == "never smoked":
+
     user_input_dict["smoking_never smoked"] = 1
 
 elif smoking_status_input == "smokes":
+
     user_input_dict["smoking_smokes"] = 1
 
 
@@ -197,7 +230,10 @@ elif smoking_status_input == "smokes":
 
 input_df = pd.DataFrame([user_input_dict])
 
-# Make sure feature order is EXACTLY the same as training
+
+# Ensure feature order is exactly the same
+# as the training data
+
 input_df = input_df.reindex(
     columns=feature_columns,
     fill_value=0
@@ -208,41 +244,62 @@ input_df = input_df.reindex(
 # PREDICTION
 # =========================
 
-if st.button("🔍 Predict Stroke Risk", use_container_width=True):
+if st.button(
+    "🔍 Predict Stroke Risk",
+    use_container_width=True
+):
 
     try:
+
         prediction = model.predict(input_df)[0]
 
         prediction_proba = model.predict_proba(input_df)[0]
 
         stroke_probability = prediction_proba[1]
 
+
         st.subheader("Prediction Result")
 
+
         if prediction == 1:
-            st.error("⚠️ Model Prediction: Stroke")
+
+            st.error(
+                "⚠️ Model Prediction: Stroke"
+            )
+
         else:
-            st.success("✅ Model Prediction: No Stroke")
+
+            st.success(
+                "✅ Model Prediction: No Stroke"
+            )
+
 
         st.metric(
             "Stroke Probability",
             f"{stroke_probability * 100:.2f}%"
         )
 
+
         st.write(
             f"Probability of No Stroke: "
             f"{prediction_proba[0] * 100:.2f}%"
         )
+
 
         st.write(
             f"Probability of Stroke: "
             f"{prediction_proba[1] * 100:.2f}%"
         )
 
+
         st.info(
-            "Disclaimer: This is a machine learning model prediction "
-            "and is not a medical diagnosis."
+            "Disclaimer: This is a machine learning "
+            "model prediction and is not a medical diagnosis."
         )
 
+
     except Exception as e:
-        st.error(f"Prediction error: {e}")
+
+        st.error(
+            f"Prediction error: {e}"
+        )

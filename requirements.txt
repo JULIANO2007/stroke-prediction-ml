@@ -1,5 +1,6 @@
 streamlit
 pandas
+# Keep this version aligned with the checked-in scikit-learn pickle artifacts.
 scikit-learn==1.6.1
 joblib
 numpy

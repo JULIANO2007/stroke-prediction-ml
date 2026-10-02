@@ -2,223 +2,226 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# =========================
-# LOAD MODEL
-# =========================
-model = joblib.load("random_forest_model.pkl")
-feature_columns = joblib.load("feature_columns_stroke.pkl")
 
-# =========================
-# PAGE
-# =========================
-st.set_page_config(
-    page_title="Stroke Prediction",
-    page_icon="🧠",
-    layout="centered"
-)
+# Fungsi untuk memuat file .pkl
+def load_pkl_file(filename):
+    return joblib.load(filename)
 
-st.title("🧠 Stroke Prediction")
-st.write("Masukkan data pasien untuk melihat hasil prediksi model.")
 
-st.divider()
+# Memuat model dan preprocessing
+rf_model = load_pkl_file("random_forest_model.pkl")
+imputer = load_pkl_file("median_imputer_stroke.pkl")
+scaler = load_pkl_file("scaler_stroke.pkl")
+feature_columns = load_pkl_file("feature_columns_stroke.pkl")
 
-# =========================
-# INPUT
-# =========================
 
-age = st.number_input(
-    "Age",
-    min_value=0.0,
-    max_value=120.0,
+# Judul aplikasi
+st.title("Aplikasi Prediksi Risiko Stroke")
+st.write("Masukkan detail pasien untuk memprediksi risiko stroke.")
+
+
+# Informasi pasien
+st.header("Informasi Pasien")
+
+numerical_features = [
+    "age",
+    "avg_glucose_level",
+    "bmi"
+]
+
+
+# Input numerik
+age = st.slider(
+    "Usia",
+    min_value=0.08,
+    max_value=82.0,
     value=40.0
 )
 
-avg_glucose = st.number_input(
-    "Average Glucose Level",
-    min_value=0.0,
-    max_value=500.0,
-    value=100.0
-)
-
-bmi = st.number_input(
-    "BMI",
-    min_value=0.0,
-    max_value=100.0,
-    value=25.0
-)
-
-gender = st.selectbox(
-    "Gender",
-    ["Female", "Male", "Other"]
-)
-
 hypertension = st.radio(
-    "Hypertension",
+    "Hipertensi",
     [0, 1],
-    format_func=lambda x: "No" if x == 0 else "Yes"
+    format_func=lambda x: "Ya" if x == 1 else "Tidak"
 )
 
 heart_disease = st.radio(
-    "Heart Disease",
+    "Penyakit Jantung",
     [0, 1],
-    format_func=lambda x: "No" if x == 0 else "Yes"
+    format_func=lambda x: "Ya" if x == 1 else "Tidak"
 )
 
-ever_married = st.radio(
-    "Ever Married",
-    [0, 1],
-    format_func=lambda x: "No" if x == 0 else "Yes"
+avg_glucose_level = st.slider(
+    "Rata-rata Tingkat Glukosa",
+    min_value=55.12,
+    max_value=271.74,
+    value=100.0
 )
 
-residence = st.selectbox(
-    "Residence Type",
-    ["Urban", "Rural"]
+bmi = st.slider(
+    "BMI",
+    min_value=10.3,
+    max_value=51.0,
+    value=25.0
 )
 
-work = st.selectbox(
-    "Work Type",
+
+# Input kategori
+gender_options = {
+    "Perempuan": 0,
+    "Laki-laki": 1
+}
+
+gender_input = st.selectbox(
+    "Jenis Kelamin",
+    list(gender_options.keys())
+)
+
+ever_married_input = st.radio(
+    "Pernah Menikah",
+    ["Ya", "Tidak"]
+)
+
+work_type_input = st.selectbox(
+    "Tipe Pekerjaan",
     [
-        "Govt_job",
-        "Never_worked",
-        "Private",
-        "Self-employed",
-        "children"
+        "Swasta",
+        "Wiraswasta",
+        "Anak-anak",
+        "PNS",
+        "Tidak Pernah Bekerja"
     ]
 )
 
-smoking = st.selectbox(
-    "Smoking Status",
+residence_type_input = st.radio(
+    "Tipe Tempat Tinggal",
+    ["Perkotaan", "Pedesaan"]
+)
+
+smoking_status_input = st.selectbox(
+    "Status Merokok",
     [
-        "Unknown",
-        "formerly smoked",
-        "never smoked",
-        "smokes"
+        "Dulu Merokok",
+        "Tidak Pernah Merokok",
+        "Merokok",
+        "Tidak Diketahui"
     ]
 )
 
-st.divider()
 
-# =========================
-# PREDICT
-# =========================
+# Membuat input dictionary
+user_input_dict = {
+    "age": age,
+    "hypertension": hypertension,
+    "heart_disease": heart_disease,
+    "avg_glucose_level": avg_glucose_level,
+    "bmi": bmi,
+    "gender": gender_options[gender_input],
+    "ever_married": 1 if ever_married_input == "Ya" else 0,
+    "Residence_type": 1 if residence_type_input == "Perkotaan" else 0
+}
 
-if st.button("🔍 PREDICT STROKE", use_container_width=True):
 
-    # Gender
-    gender_value = {
-        "Female": 0,
-        "Male": 1,
-        "Other": 2
-    }[gender]
+# Inisialisasi kolom one-hot
+for col in feature_columns:
+    if col.startswith("work_") or col.startswith("smoking_"):
+        user_input_dict[col] = 0
 
-    # Residence
-    residence_value = 1 if residence == "Urban" else 0
 
-    # Work type
-    work_values = {
-        "Govt_job": 1,
-        "Never_worked": 1,
-        "Private": 1,
-        "Self-employed": 1,
-        "children": 1
-    }
+# Work type
+if work_type_input == "Tidak Pernah Bekerja":
+    user_input_dict["work_Never_worked"] = 1
 
-    # Smoking
-    smoking_values = {
-        "Unknown": 1,
-        "formerly smoked": 1,
-        "never smoked": 1,
-        "smokes": 1
-    }
+elif work_type_input == "Swasta":
+    user_input_dict["work_Private"] = 1
 
-    # =========================
-    # BUILD DATA
-    # =========================
+elif work_type_input == "Wiraswasta":
+    user_input_dict["work_Self-employed"] = 1
 
-    data = {
-        "gender": gender_value,
-        "age": age,
-        "hypertension": hypertension,
-        "heart_disease": heart_disease,
-        "ever_married": ever_married,
-        "Residence_type": residence_value,
-        "avg_glucose_level": avg_glucose,
-        "bmi": bmi,
+elif work_type_input == "Anak-anak":
+    user_input_dict["work_children"] = 1
 
-        "work_Govt_job":
-            1 if work == "Govt_job" else 0,
+elif work_type_input == "PNS":
+    user_input_dict["work_Govt_job"] = 1
 
-        "work_Never_worked":
-            1 if work == "Never_worked" else 0,
 
-        "work_Private":
-            1 if work == "Private" else 0,
+# Smoking status
+if smoking_status_input == "Dulu Merokok":
+    user_input_dict["smoking_formerly smoked"] = 1
 
-        "work_Self-employed":
-            1 if work == "Self-employed" else 0,
+elif smoking_status_input == "Tidak Pernah Merokok":
+    user_input_dict["smoking_never smoked"] = 1
 
-        "work_children":
-            1 if work == "children" else 0,
+elif smoking_status_input == "Merokok":
+    user_input_dict["smoking_smokes"] = 1
 
-        "smoking_Unknown":
-            1 if smoking == "Unknown" else 0,
+elif smoking_status_input == "Tidak Diketahui":
+    user_input_dict["smoking_Unknown"] = 1
 
-        "smoking_formerly smoked":
-            1 if smoking == "formerly smoked" else 0,
 
-        "smoking_never smoked":
-            1 if smoking == "never smoked" else 0,
+# Membuat DataFrame
+input_df = pd.DataFrame([user_input_dict])
 
-        "smoking_smokes":
-            1 if smoking == "smokes" else 0
-    }
+# Menyesuaikan urutan kolom dengan saat training
+input_df = input_df.reindex(
+    columns=feature_columns,
+    fill_value=0
+)
 
-    df = pd.DataFrame([data])
 
-    # Pastikan urutan fitur sama dengan model
-    df = df.reindex(columns=feature_columns, fill_value=0)
+# Preprocessing fitur numerik
+input_numerical_processed = input_df[numerical_features].copy()
 
-    # =========================
-    # PREDICTION
-    # =========================
+# Imputasi
+input_numerical_processed = pd.DataFrame(
+    imputer.transform(input_numerical_processed),
+    columns=numerical_features,
+    index=input_df.index,
+)
 
-    prediction = model.predict(df)[0]
-    probability = model.predict_proba(df)[0]
+# Scaling
+input_numerical_processed = pd.DataFrame(
+    scaler.transform(input_numerical_processed),
+    columns=numerical_features,
+    index=input_df.index,
+)
 
-    no_stroke = probability[0] * 100
-    stroke = probability[1] * 100
+# Masukkan kembali hasil preprocessing
+input_df[numerical_features] = input_numerical_processed
 
-    st.divider()
 
-    # =========================
-    # RESULT
-    # =========================
+# Tombol prediksi
+if st.button("Prediksi Risiko Stroke"):
 
-    if prediction == 1:
-        st.error("⚠️ HASIL: STROKE")
+    prediction = rf_model.predict(input_df)
 
+    prediction_proba = rf_model.predict_proba(input_df)
+
+    st.subheader("Hasil Prediksi")
+
+    if prediction[0] == 1:
+        st.error(
+            "Berdasarkan informasi yang diberikan, "
+            "model memprediksi risiko STROKE."
+        )
     else:
-        st.success("✅ HASIL: TIDAK STROKE")
-
-    st.subheader("Probability")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.metric(
-            "Tidak Stroke",
-            f"{no_stroke:.2f}%"
+        st.success(
+            "Berdasarkan informasi yang diberikan, "
+            "model memprediksi risiko TIDAK STROKE."
         )
 
-    with col2:
-        st.metric(
-            "Stroke",
-            f"{stroke:.2f}%"
-        )
+    st.write(
+        f"Probabilitas Tidak Stroke: "
+        f"**{prediction_proba[0][0]:.2%}**"
+    )
 
-    st.progress(int(stroke))
+    st.write(
+        f"Probabilitas Stroke: "
+        f"**{prediction_proba[0][1]:.2%}**"
+    )
 
-    st.caption(
-        "Hasil ini merupakan prediksi dari model machine learning "
-        "dan bukan diagnosis medis."
+    st.write("---")
+
+    st.write(
+        "Disclaimer: Ini adalah model prediktif dan "
+        "tidak boleh digunakan sebagai pengganti nasihat medis profesional."
     )
